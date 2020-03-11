@@ -33,8 +33,8 @@ __pycache__/
 
 # videos #
 ###################
-*.blend1
-*.blend
+*.avi
+*.mp4
 
 # 3d models #
 ###################
@@ -45,3 +45,6 @@ __pycache__/
 *.jpg
 *.png
 *.jpeg
+*.tif
+*.tiff
+*.psd
