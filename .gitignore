@@ -1,0 +1,47 @@
+# Don't track content of these folders
+__pycache__/
+
+
+# Compiled source #
+###################
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+
+*.so
+
+# Packages #
+############
+# it's better to unpack these files and commit the raw source
+# git has its own built in compression methods
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+# blender files #
+###################
+*.blend1
+*.blend
+
+# videos #
+###################
+*.blend1
+*.blend
+
+# 3d models #
+###################
+*.fbx
+
+# textures #
+###################
+*.jpg
+*.png
+*.jpeg
