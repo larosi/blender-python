@@ -35,3 +35,16 @@ cd "C:\Program Files\Blender Foundation\Blender 2.81\2.81\python\bin"
 ## [Libros](http://www.allitebooks.org/)
 [The Blender Python API](http://www.allitebooks.org/the-blender-python-api/)
 [Blender Cycles Materials & Textures Cookbook](http://www.allitebooks.org/blender-cycles-materials-and-textures-cookbook-third-edition/)
+
+## Commit style
+
+The type is contained within the title and can be one of these types:
+
+- **feat:** a new feature
+- **fix:** a bug fix
+- **docs:** changes to documentation
+- **data:** data transformations or adding (DVCs repos)
+- **style:** formatting, missing semi colons, etc; no code change
+- **refactor:** refactoring production code
+- **test:** adding tests, refactoring test; no production code change
+- **chore:** updating build tasks, package manager configs, etc; no production code change
