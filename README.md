@@ -1,5 +1,5 @@
 # Blender-Python
-Apuntes blender 2.8 + python API
+Apuntes blender 2.8x + python API
 
 
 agregar objeto	shift + A
@@ -14,13 +14,13 @@ join	ctrl + j
 set cursor to world center	ctrl + s
 focus an object	numpad .
 
-## Ejecutar blender desde cmd
+## Ejecutar Blender desde cmd
 ```
 cd "C:\Program Files\Blender Foundation\Blender 2.81"
 .\blender.exe
 ```
 
-## Instalar liberías con pip en blender
+## Instalar liberías con pip en Blender
 ```
 cd "C:\Program Files\Blender Foundation\Blender 2.81\2.81\python\bin"
 .\python.exe -m pip install {nombre lib} --user
@@ -48,3 +48,9 @@ The type is contained within the title and can be one of these types:
 - **refactor:** refactoring production code
 - **test:** adding tests, refactoring test; no production code change
 - **chore:** updating build tasks, package manager configs, etc; no production code change
+
+## Jira Taks
+[PoC: Generar workers para clasificación](https://odd.atlassian.net/browse/OAIT-299)
+
+## Confluence
+[Propuesta I+D: Datasets Artificiales](https://odd.atlassian.net/wiki/spaces/OAT/pages/59441403/Propuesta+I+D+Datasets+Artificiales)
