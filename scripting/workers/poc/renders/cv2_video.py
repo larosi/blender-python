@@ -15,10 +15,11 @@ import glob
 #folder_path = 'C:\\Users\\Mico\\Desktop\\marcha\\test_SFCN\\heatmap\\*.png'
 
 #folder_path = 'C:\\Users\\Mico\\Desktop\\marcha\\territoria2_SFCN\\heatmap\\*.png'
-folder_path = 'C:\\Users\\Mico\\Desktop\\blender_udemy\\scripting\\workers\\poc\\renders\\test\\*.png'
+folder_path = 'C:\\Users\\Mico\\Desktop\\blender-python\\scripting\\workers\\poc\\renders\\test\\*.jpg'
 #folder_path = 'C:\\Users\\Mico\\Desktop\\marcha\\territoria2_SFCN\\original\\*.jpg'
 img_array = []
 contador = 0
+os.
 for filename in glob.glob(folder_path):
     contador = contador + 1
     if contador%1 == 0:
@@ -34,8 +35,8 @@ for filename in glob.glob(folder_path):
 
 out_filename = 'worker_helmet_colorchange'
 #out_filename = 'territoria2_org'
-out = cv2.VideoWriter(out_filename+'.avi',cv2.VideoWriter_fourcc(*'DIVX'), 15, size)
-#out = cv2.VideoWriter(out_filename+'.mp4',cv2.VideoWriter_fourcc(*'MP4V'), 15, size)
+#out = cv2.VideoWriter(out_filename+'.avi',cv2.VideoWriter_fourcc(*'DIVX'), 15, size)
+out = cv2.VideoWriter(out_filename+'.mp4',cv2.VideoWriter_fourcc(*'MP4V'), 15, size)
 
 for i in range(len(img_array)):
     out.write(img_array[i])

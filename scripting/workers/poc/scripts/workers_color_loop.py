@@ -4,7 +4,7 @@ import os
 from random import randint
 
 
-DEBUG_MODE = True
+DEBUG_MODE = False # to use outside blender
 if DEBUG_MODE:
     from skimage import io
     import numpy as np
@@ -51,7 +51,34 @@ def do_render(output_path):
     else:
         bpy.context.scene.render.filepath = render_output_path
         bpy.ops.render.render(write_still=True)
+        
+def load_image(image_path):
+    if DEBUG_MODE:
+        print("bpy.data.images.load(image_path)")
+    else:
+        bpy.data.images.load(image_path)
     
+class WorkerChalecos():
+    def __init__(self, script_path):
+        
+        # add all the images of the folder to blender
+        textures_folder = os.path.join(script_path,'textures','chalecos')
+        textures_filenames = os.listdir(textures_folder)
+        self.image_names = textures_filenames
+        for texture_filename in textures_filenames:
+            image_path = os.path.join(textures_folder,texture_filename)
+            load_image(image_path)
+
+    def set_texture(self, image_name):
+        if DEBUG_MODE:
+            print('setting texture image: {}'.format(image_name))
+        else:
+            bpy.data.materials['Jacket'].node_tree.nodes['Image Texture'].image = bpy.data.images[image_name]
+            
+    def set_random_texture(self):
+        i = randint(0,len(self.image_names)-1)
+        self.set_texture(self.image_names[i])
+
 class WorkerCascos():
     def __init__(self):
         # RGBa format
@@ -103,13 +130,13 @@ class WorkerCascos():
     def set_diffuse_color(self, color_casco):
         diffuse_color_rgba = self.get_diffuse_noisy(color_casco)
         if DEBUG_MODE:
-            print('setting diffuse_color')
+            print('setting diffuse_color: {}'.format(color_casco))
         else:
             bpy.data.materials["Casco"].node_tree.nodes["Diffuse BSDF"].inputs[0].default_value = diffuse_color_rgba
 
 
-
-output_folder = 'C:\\Users\\Mico\\Desktop\\blender_udemy\\scripting\\workers\\poc\\renders'
+script_path = 'C:\\Users\\Mico\\Desktop\\blender-python\\scripting\\workers\\poc'
+output_folder = os.path.join(script_path,'renders')
 
 # colores de casco disponibles
 colores = [    "amarillo",
@@ -122,14 +149,17 @@ colores = [    "amarillo",
                 "verde"]
 
 worker_cascos = WorkerCascos()
+worker_chalecos = WorkerChalecos(script_path)
 n_samples = 5
 for color_casco in colores:
     if DEBUG_MODE:
         color_samples = np.ones((n_samples,n_samples*10,3),dtype=np.float64)
     for i in range(0,n_samples):
-        worker_cascos.set_diffuse_color(color_casco)
+        worker_chalecos.set_random_texture() # cambiar el color del chaleco
+        worker_cascos.set_diffuse_color(color_casco) # cambiar el color del casco
         render_filename = 'worker_{}_sample_{}.png'.format(color_casco,i)
         render_output_path = os.path.join(output_folder,render_filename)
+        
         do_render(render_output_path)
 
         if DEBUG_MODE:     
