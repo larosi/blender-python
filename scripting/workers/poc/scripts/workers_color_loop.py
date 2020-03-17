@@ -3,6 +3,7 @@ import bpy
 import os
 from random import randint
 import numpy as np
+from math import pi
 
 DEBUG_MODE = False # to use outside blender
 if DEBUG_MODE:
@@ -160,7 +161,52 @@ def load_image(image_path):
         print("bpy.data.images.load(image_path)")
     else:
         bpy.data.images.load(image_path)
-    
+
+class OrbitCamera():
+    def __init__(self,target_name, n_points=40, radius = 15, cam_name = 'Camera' ):
+        
+        self.cam_name = cam_name
+        self.target_name = target_name
+        self.n_points = n_points
+        # define N*N points over a sub-sphere
+        theta = np.linspace(0, 2 * np.pi, n_points) #horizontal plane rotation
+        phi   = np.linspace(0.25*np.pi, 0.5*np.pi, self.n_points) #vertical plane rotation
+        THETA, PHI = np.meshgrid(theta, phi) 
+        
+        # using spherical coords
+        R = radius
+        X = R * np.sin(PHI) * np.cos(THETA)
+        Y = R * np.sin(PHI) * np.sin(THETA)
+        Z = R * np.cos(PHI)
+        
+        self.PHI = THETA
+        self.THETA = PHI
+        self.X = X
+        self.Y = Y
+        self.Z = Z
+
+    def update_position(self):
+        # select a random point over the sphere
+        i = randint(0,self.n_points-1)
+        j = randint(0,self.n_points-1)
+        
+        # select camera and target objects
+        cam = bpy.data.objects[self.cam_name]
+        target = bpy.data.objects[self.target_name]
+        
+        # update camera location as:
+        # sphere_point + target_position
+        cam.location =  (self.X[i][j] + target.x,
+                         self.Y[i][j] + target.y,
+                         self.Z[i][j] + target.z)
+        
+        # update camera rotation as:
+        # sphere_radius_dir_angle + [0, 0, pi/2]
+
+        cam.rotation_euler = (self.PHI[i,j], #x
+                              0, #y
+                              pi/2+self.THETA[i,j]) #z
+            
 class WorkerChalecos():
     def __init__(self, script_path):
         
@@ -291,7 +337,7 @@ colores = [    "amarillo",
 #colores = ["azul", "azul"]
 worker_cascos = WorkerCascos()
 worker_chalecos = WorkerChalecos(script_path)
-
+worker_camera = OrbitCamera(target_name='Hats')
 n_samples = 1 #samples per frame
 n_frames = 10 #total animated frames
 total_images = n_frames*n_samples*len(colores)
@@ -310,6 +356,7 @@ for t in range(0,n_frames):
             print(color_casco)
             worker_chalecos.set_random_texture() # cambiar el color del chaleco
             worker_cascos.set_diffuse_color(color_casco) # cambiar el color del casco
+            worker_camera.update_position() # move the camera
             render_filename = 'worker_{}_sample_{}_time_{}.png'.format(color_casco,i,t)
             render_output_path = os.path.join(output_folder,render_filename)
             
