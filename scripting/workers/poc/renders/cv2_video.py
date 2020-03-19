@@ -19,7 +19,7 @@ folder_path = 'C:\\Users\\Mico\\Desktop\\blender-python\\scripting\\workers\\poc
 #folder_path = 'C:\\Users\\Mico\\Desktop\\marcha\\territoria2_SFCN\\original\\*.jpg'
 img_array = []
 contador = 0
-os.
+
 for filename in glob.glob(folder_path):
     contador = contador + 1
     if contador%1 == 0:

@@ -12,7 +12,7 @@ if DEBUG_MODE:
 
 """ General render parameters """
 render_engines = ['CYCLES','BLENDER_EEVEE','BLENDER_WORKBENCH']
-RENDER_ENGINE = render_engines[1] # choose the render engine
+RENDER_ENGINE = render_engines[0] # choose the render engine
 # Cycles: Raytracing render - 10 seg per image
 # Eevee: Realtime videogame-like render - 1 seg per image aprox
 # Workbench: Same render that blender use on the viewport
@@ -163,24 +163,24 @@ def load_image(image_path):
         bpy.data.images.load(image_path)
 
 class OrbitCamera():
-    def __init__(self,target_name, n_points=40, radius = 15, cam_name = 'Camera' ):
+    def __init__(self,target_name, n_points=150, radius = 2.8, cam_name = 'Camera' ):
         
         self.cam_name = cam_name
         self.target_name = target_name
         self.n_points = n_points
         # define N*N points over a sub-sphere
         theta = np.linspace(0, 2 * np.pi, n_points) #horizontal plane rotation
-        phi   = np.linspace(0.25*np.pi, 0.5*np.pi, self.n_points) #vertical plane rotation
+        phi   = np.linspace(0.1*np.pi, 0.3*np.pi, self.n_points) #vertical plane rotation
         THETA, PHI = np.meshgrid(theta, phi) 
         
         # using spherical coords
         R = radius
         X = R * np.sin(PHI) * np.cos(THETA)
         Y = R * np.sin(PHI) * np.sin(THETA)
-        Z = R * np.cos(PHI)
+        Z = -R * np.cos(PHI)
         
-        self.PHI = THETA
-        self.THETA = PHI
+        self.PHI = PHI
+        self.THETA = THETA
         self.X = X
         self.Y = Y
         self.Z = Z
@@ -192,13 +192,13 @@ class OrbitCamera():
         
         # select camera and target objects
         cam = bpy.data.objects[self.cam_name]
-        target = bpy.data.objects[self.target_name]
+        target = bpy.data.objects[self.target_name].location
         
         # update camera location as:
         # sphere_point + target_position
         cam.location =  (self.X[i][j] + target.x,
                          self.Y[i][j] + target.y,
-                         self.Z[i][j] + target.z)
+                         -self.Z[i][j] + target.z)
         
         # update camera rotation as:
         # sphere_radius_dir_angle + [0, 0, pi/2]
@@ -206,7 +206,30 @@ class OrbitCamera():
         cam.rotation_euler = (self.PHI[i,j], #x
                               0, #y
                               pi/2+self.THETA[i,j]) #z
+class Fondo():
+    def __init__(self, script_path):
+        
+        # add all the images of the folder to blender
+        textures_folder = os.path.join(script_path,'textures','fondos')
+        textures_filenames = os.listdir(textures_folder)
+        self.image_names = textures_filenames
+        for texture_filename in textures_filenames:
+            image_path = os.path.join(textures_folder,texture_filename)
+            load_image(image_path)
+
+    def set_texture(self, image_name):
+        if DEBUG_MODE:
+            print('setting texture image: {}'.format(image_name))
+        else:
+            bpy.data.materials['Background'].node_tree.nodes['Image Texture'].image = bpy.data.images[image_name]
             
+    def set_random_texture(self):
+        i = randint(0,len(self.image_names)-1)
+        image_name = self.image_names[i]
+        self.set_texture(image_name)
+        #image_name = image_name.split('.')[0]
+        #return image_name 
+
 class WorkerChalecos():
     def __init__(self, script_path):
         
@@ -228,7 +251,7 @@ class WorkerChalecos():
         i = randint(0,len(self.image_names)-1)
         image_name = self.image_names[i]
         self.set_texture(image_name)
-        
+        image_name = image_name.split('.')[0]
         return image_name
     
 class WorkerCascos():
@@ -271,12 +294,7 @@ class WorkerCascos():
         print('random_color')
         print(rgba)
         h,s,v,_=rgb2hsv(rgba)
-        #hsv = [h,s,v,1]
-        #rgb = hsv2rgb(hsv)
-        #print(rgb)
-        #print(hsv)
-        #print('')        
-        #return rgb
+
     
         (hmin, hmax), (smin,smax), (vmin,vmax) = hsv_noise
         hsv = [h+randint(hmin,hmax),
@@ -286,8 +304,7 @@ class WorkerCascos():
         hsv_glossy = [h,randint(5,15)/20,randint(5,15)/20,1]
         rgb_glossy = hsv2rgb(hsv_glossy)
         rgb=hsv2rgb(hsv)
-        print(rgb)
-        print(hsv)
+  
         return rgb ,rgb_glossy
 
     def get_diffuse_noisy(self, color_casco):
@@ -296,20 +313,7 @@ class WorkerCascos():
         rgba_new, rgb_glossy = self.randomize_color(rgba,hsv_noise)
         
         return rgba_new, rgb_glossy
-    """
-    def get_diffuse_noisy(self, color_casco):
-        r,g,b,alpha = self.get_diffuse_casco(color_casco)
-        mu,sigma = self.diffuse_noise[color_casco]
-        r = int(r*255-mu)
-        g = int(g*255-mu)
-        b = int(b*255-mu)
-        r = color_limiter_uint8(randint(r-sigma, r+sigma))/255
-        g = color_limiter_uint8(randint(g-sigma, g+sigma))/255
-        b = color_limiter_uint8(randint(b-sigma, b+sigma))/255
-        new_color = [r,g,b,alpha]
-        
-        return new_color
-    """    
+
     def set_diffuse_color(self, color_casco):
         diffuse_color_rgba, glossy_color_rgba = self.get_diffuse_noisy(color_casco)
         if DEBUG_MODE:
@@ -321,6 +325,10 @@ class WorkerCascos():
                 bpy.data.objects[self.object_name].hide_render = False
                 bpy.data.materials[self.material_name].node_tree.nodes["Diffuse BSDF"].inputs[0].default_value = diffuse_color_rgba
                 bpy.data.materials[self.material_name].node_tree.nodes["Glossy BSDF"].inputs[0].default_value = glossy_color_rgba
+
+def make_folder(folder_path):
+    if not os.path.exists(folder_path):
+        os.mkdir(folder_path)
 
 script_path = 'C:\\Users\\Mico\\Desktop\\blender-python\\scripting\\workers\\poc'
 output_folder = os.path.join(script_path,'renders')
@@ -334,44 +342,56 @@ colores = [    "amarillo",
                 "rojo",
                 "sin_casco",
                 "verde"]
-#colores = ["azul", "azul"]
+
+for color_casco in colores:
+    make_folder(os.path.join(output_folder,color_casco))
+
 worker_cascos = WorkerCascos()
 worker_chalecos = WorkerChalecos(script_path)
-worker_camera = OrbitCamera(target_name='Hats')
-n_samples = 1 #samples per frame
-n_frames = 10 #total animated frames
-total_images = n_frames*n_samples*len(colores)
+worker_camera = OrbitCamera(target_name='Target')
+fondo_scena = Fondo(script_path)
+n_samples = 5 #samples per frame
+max_frames = 5 #total animated frames
+
 
 if not DEBUG_MODE:
-    n_frames = bpy.context.scene.frame_end
-    
-print('se gerarán {} imagenes'.format(total_images))    
+    max_frames = bpy.context.scene.frame_end
+#max_frames = 5
 
-for t in range(0,n_frames):
-    next_frame(t)
-    for color_casco in colores:
-        #if DEBUG_MODE:
-            #color_samples = np.ones((n_samples,n_samples*10,3),dtype=np.float64)
-        for i in range(0,n_samples):
-            print(color_casco)
-            worker_chalecos.set_random_texture() # cambiar el color del chaleco
-            worker_cascos.set_diffuse_color(color_casco) # cambiar el color del casco
-            worker_camera.update_position() # move the camera
-            render_filename = 'worker_{}_sample_{}_time_{}.png'.format(color_casco,i,t)
-            render_output_path = os.path.join(output_folder,render_filename)
-            
-            do_render(render_output_path)
-            """
-            if DEBUG_MODE:     
-                color_sample = worker_cascos.get_diffuse_noisy(color_casco)
-                color_samples[:,i*10:(i+1)*10,:] = color_samples[:,i*10:(i+1)*10,:]*color_sample[0:3]
-            """
-        #if DEBUG_MODE:
-            #print(color_sample)
-            #print(color_samples.min())
-            #print(color_samples.max())
-            #io.imshow(color_samples)
-            #io.show()
+
+actions = bpy.data.actions
+contador = 0
+total_frames = 0
+for action_i in range(0,len(actions)):
+    action_name = actions[action_i].name
+    if action_name != 'Light.001Action':
+        total_frames = total_frames + min(int(actions[action_i].frame_range[1]),max_frames)
+
+total_images = total_frames*n_samples*len(colores)        
+print('se gerarán {} imagenes aprox'.format(total_images))         
+for action_i in range(0,len(actions)):
+    bpy.data.objects['Armature'].animation_data.action = actions[action_i]
+    action_name = actions[action_i].name
+    n_frames = min(int(actions[action_i].frame_range[1]),max_frames)
+    if action_name != 'Light.001Action':
+        for t in range(0,n_frames):
+            next_frame(t)
+            for color_casco in colores:
+                for i in range(0,n_samples):
+                    print(color_casco)
+                    color_traje = worker_chalecos.set_random_texture() # cambiar el color del chaleco
+                    worker_cascos.set_diffuse_color(color_casco) # cambiar el color del casco
+                    fondo_scena.set_random_texture() # cambia la imagen del fondo
+                    worker_camera.update_position() # mueve la camara
+
+                    #las clases se guardan en el nombre de la imagen
+                    render_filename = 'worker-{}-{}-sample_{}_act_{}_time_{}.png'.format(color_casco,color_traje,i,action_name,t)
+                    render_output_path = os.path.join(output_folder,color_casco,render_filename)
+                    
+                    do_render(render_output_path)
+                    contador = contador+1
+                    print('Generando workers {}/{} imagenes aprox'.format(contador,total_images)) 
+
 
 
         
