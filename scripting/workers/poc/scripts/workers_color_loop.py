@@ -4,6 +4,7 @@ import os
 from random import randint
 import numpy as np
 from math import pi
+from bpy_boundingbox import get_boundingbox
 
 DEBUG_MODE = False # to use outside blender
 if DEBUG_MODE:
@@ -385,7 +386,8 @@ for action_i in range(0,len(actions)):
                     worker_camera.update_position() # mueve la camara
 
                     #las clases se guardan en el nombre de la imagen
-                    render_filename = 'worker-{}-{}-sample_{}_act_{}_time_{}.png'.format(color_casco,color_traje,i,action_name,t)
+                    
+                    render_filename = 'worker-{}-{}-sample_{}_act_{}_time_{}'.format(color_casco,color_traje,i,action_name,t)
                     render_output_path = os.path.join(output_folder,color_casco,render_filename)
                     
                     do_render(render_output_path)
