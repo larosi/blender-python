@@ -4,6 +4,7 @@
 
 import bpy
 import numpy as np
+import os
 
 def get_boundingbox(object_name, camera_name='Camera', scene_name='Scene'):
     """
@@ -78,7 +79,19 @@ def get_boundingbox(object_name, camera_name='Camera', scene_name='Scene'):
 
     return [min_x,max_x,min_y,max_y]
 
+def save_bbox(object_class, bbox, filepath):
+    [min_x,max_x,min_y,max_y] = bbox 
+    txt_file = open(os.path.join(filepath,'_gt.txt'),'w')
+    bbox_str = '{}\t{}\t{}\t{}\t{}\n'.format('object_class','min_x','max_x','min_y','max_y')
+    bbox_str = bbox_str+'{}\t{}\t{}\t{}\t{}'.format(object_class,min_x,max_x,min_y,max_y)
+    txt_file.write(bbox_str)
+    txt_file.close()
+
+
 if __name__ == '__main__':
     mesh_object = 'Cube'
     bbox = get_boundingbox(mesh_object)
     print(bbox)
+    bpy.ops.render.render(write_still=True)
+    filepath = bpy.context.scene.render.filepath
+    save_bbox(mesh_object, bbox, filepath)
