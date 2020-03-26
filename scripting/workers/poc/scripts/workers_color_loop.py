@@ -4,7 +4,7 @@ import os
 from random import randint
 import numpy as np
 from math import pi
-from bpy_boundingbox import get_boundingbox
+#from bpy_boundingbox import get_boundingbox
 
 DEBUG_MODE = False # to use outside blender
 if DEBUG_MODE:
@@ -12,6 +12,9 @@ if DEBUG_MODE:
     
 
 """ General render parameters """
+script_path = 'C:\\Users\\Mico\\Desktop\\blender-python\\scripting\\workers\\poc'
+output_folder = os.path.join(script_path,'renders')
+
 render_engines = ['CYCLES','BLENDER_EEVEE','BLENDER_WORKBENCH']
 RENDER_ENGINE = render_engines[0] # choose the render engine
 # Cycles: Raytracing render - 10 seg per image
@@ -50,6 +53,16 @@ if not DEBUG_MODE:
         # Title size
         bpy.context.scene.render.tile_x = 256 #256 128 64 32
         bpy.context.scene.render.tile_y = 256 #256 128 64 32   
+
+def do_render(base_path, sub_folder, output_filename):
+    bpy.data.scenes["Scene"].node_tree.nodes["Rgb"].base_path = base_path
+    bpy.data.scenes["Scene"].node_tree.nodes["Mask"].base_path = base_path
+    rgb_imagepath = os.path.join('images',sub_folder,output_filename)
+    mask_imagepath = os.path.join('masks',sub_folder,output_filename)
+    bpy.data.scenes["Scene"].node_tree.nodes["Rgb"].file_slots[0].path = rgb_imagepath
+    bpy.data.scenes["Scene"].node_tree.nodes["Mask"].file_slots[0].path = mask_imagepath
+    #bpy.context.scene.render.filepath = render_output_path
+    bpy.ops.render.render(use_viewport=False)
 
 def rgb2hsv(rgba):
     r,g,b=rgba[0],rgba[1],rgba[2]
@@ -144,12 +157,7 @@ def color_limiter_float64(color_value):
     color_value = max(min(color_value,1.0),0.0)
     return float(color_value)
 
-def do_render(output_path):
-    if DEBUG_MODE:
-        print('rendering to {}'.format(output_path))
-    else:
-        bpy.context.scene.render.filepath = render_output_path
-        bpy.ops.render.render(write_still=True)
+
         
 def next_frame(t):
     if DEBUG_MODE:
@@ -164,7 +172,7 @@ def load_image(image_path):
         bpy.data.images.load(image_path)
 
 class OrbitCamera():
-    def __init__(self,target_name, n_points=150, radius = 2.8, cam_name = 'Camera' ):
+    def __init__(self,target_name, n_points=150, radius = 3.5, cam_name = 'Camera' ):
         
         self.cam_name = cam_name
         self.target_name = target_name
@@ -331,8 +339,7 @@ def make_folder(folder_path):
     if not os.path.exists(folder_path):
         os.mkdir(folder_path)
 
-script_path = 'C:\\Users\\Mico\\Desktop\\blender-python\\scripting\\workers\\poc'
-output_folder = os.path.join(script_path,'renders')
+
 
 # colores de casco disponibles
 colores = [    "amarillo",
@@ -344,20 +351,20 @@ colores = [    "amarillo",
                 "sin_casco",
                 "verde"]
 
-for color_casco in colores:
-    make_folder(os.path.join(output_folder,color_casco))
+#for color_casco in colores:
+#    make_folder(os.path.join(output_folder,color_casco))
 
 worker_cascos = WorkerCascos()
 worker_chalecos = WorkerChalecos(script_path)
 worker_camera = OrbitCamera(target_name='Target')
 fondo_scena = Fondo(script_path)
-n_samples = 5 #samples per frame
-max_frames = 5 #total animated frames
+n_samples = 1 #samples per frame
+
 
 
 if not DEBUG_MODE:
     max_frames = bpy.context.scene.frame_end
-#max_frames = 5
+max_frames = 1
 
 
 actions = bpy.data.actions
@@ -386,11 +393,13 @@ for action_i in range(0,len(actions)):
                     worker_camera.update_position() # mueve la camara
 
                     #las clases se guardan en el nombre de la imagen
-                    
-                    render_filename = 'worker-{}-{}-sample_{}_act_{}_time_{}'.format(color_casco,color_traje,i,action_name,t)
-                    render_output_path = os.path.join(output_folder,color_casco,render_filename)
-                    
-                    do_render(render_output_path)
+                    sub_folder = color_casco
+                    render_filename = 'worker-{}-{}-sample_{}_act_{}_frame_'.format(color_casco,color_traje,i,action_name)
+                    #render_output_path = os.path.join(output_folder,color_casco,render_filename)
+                    frame_str = str(t).zfill(4)
+                    do_render(output_folder,sub_folder,render_filename)
+                    render_filename_final = render_filename + frame_str + '.jpg'
+                    print(render_filename_final)
                     contador = contador+1
                     print('Generando workers {}/{} imagenes aprox'.format(contador,total_images)) 
 
