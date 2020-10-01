@@ -358,13 +358,13 @@ worker_cascos = WorkerCascos()
 worker_chalecos = WorkerChalecos(script_path)
 worker_camera = OrbitCamera(target_name='Target')
 fondo_scena = Fondo(script_path)
-n_samples = 1 #samples per frame
+n_samples = 8 #samples per frame
 
 
 
 if not DEBUG_MODE:
     max_frames = bpy.context.scene.frame_end
-max_frames = 1
+#max_frames = 1
 
 
 actions = bpy.data.actions
@@ -398,8 +398,8 @@ for action_i in range(0,len(actions)):
                     #render_output_path = os.path.join(output_folder,color_casco,render_filename)
                     frame_str = str(t).zfill(4)
                     do_render(output_folder,sub_folder,render_filename)
-                    render_filename_final = render_filename + frame_str + '.jpg'
-                    print(render_filename_final)
+                    #render_filename_final = render_filename + frame_str + '.jpg'
+                    #print(render_filename_final)
                     contador = contador+1
                     print('Generando workers {}/{} imagenes aprox'.format(contador,total_images)) 
 

@@ -29,7 +29,7 @@ __pycache__/
 # blender files #
 ###################
 *.blend1
-*.blend
+#*.blend
 
 # videos #
 ###################
@@ -38,13 +38,13 @@ __pycache__/
 
 # 3d models #
 ###################
-*.fbx
+#*.fbx
 
 # textures #
 ###################
-*.jpg
-*.png
-*.jpeg
-*.tif
-*.tiff
-*.psd
+#*.jpg
+#*.png
+#*.jpeg
+#*.tif
+#*.tiff
+#*.psd
